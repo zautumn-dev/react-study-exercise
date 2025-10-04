@@ -2,7 +2,7 @@ import React from 'react';
 
 function MainWatchMovieList({watched}) {
   return (
-      <ul className="list">
+      <ul className="list" list-watched>
         {watched.map((movie) => (
             <li key={movie.imdbID}>
               <img src={movie.Poster} alt={`${movie.Title} poster`}/>
