@@ -1,20 +1,28 @@
-import React from 'react';
+// import React from 'react';
+// import MainMovieItem from './MainMovieItem';
+//
+// // cloneElement
+// // https://react.dev/reference/react/cloneElement
+// function MainMovieList({movies, children}) {
+//   return (
+//       <ul className="list list-movies">
+//         {movies?.map((movie) => React.cloneElement(children,
+//             {movie, key: movie.imdbID}))}
+//       </ul>
+//   );
+// }
+//
+// export default MainMovieList;
 
-function MainMovieList({movies}) {
+// 代替方案
+// https://react.dev/reference/react/cloneElement#alternatives
+import React from 'react';
+import MainMovieItem from './MainMovieItem';
+
+function MainMovieList({movies, renderFunc}) {
   return (
       <ul className="list list-movies">
-        {movies?.map((movie) => (
-            <li key={movie.imdbID}>
-              <img src={movie.Poster} alt={`${movie.Title} poster`}/>
-              <h3>{movie.Title}</h3>
-              <div>
-                <p>
-                  <span>🗓</span>
-                  <span>{movie.Year}</span>
-                </p>
-              </div>
-            </li>
-        ))}
+        {movies?.map((movie) => renderFunc(movie))}
       </ul>
   );
 }
