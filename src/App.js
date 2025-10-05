@@ -14,6 +14,8 @@ import MovieDetail from './components/MovieDetail';
 import {asyncCatch} from './lib/utils';
 import Loading from './components/Loading';
 
+const LOCAL_WATCHED = 'watched';
+
 const average = (arr) =>
     arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
@@ -26,7 +28,15 @@ export default function App() {
   const [query, setQuery] = useState('Interstellar');
 
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
+  // 初始化 usestate 传入一个回调函数 在初次渲染阶段就获取到了本地的初始值
+  // https://zh-hans.react.dev/reference/react/useState#usestate
+  const [watched, setWatched] = useState(function() {
+    const localWatched = JSON.parse(localStorage.getItem(LOCAL_WATCHED));
+
+    if (!localWatched.length) return [];
+
+    return localWatched;
+  });
 
   const [isLoading, setIsLoading] = useState(false);
   const [errMessage, setErrMessage] = useState(undefined);
@@ -92,6 +102,16 @@ export default function App() {
   function handleDelWatchMovie(id) {
     setWatched(movies => movies.filter(m => m.imdbID !== id));
   }
+
+  // useEffect(() => {
+  //   // 获取本地已存储的观看列表 不可行 这时获取的是空数组
+  //   const localWatched = JSON.parse(localStorage.getItem(LOCAL_WATCHED));
+  //   console.log(localWatched);
+  //
+  //   if (!localWatched.length) return;
+  //
+  //   setWatched(_ => localWatched);
+  // }, []);
 
   useEffect(() => {
 
@@ -160,6 +180,12 @@ export default function App() {
       document.removeEventListener('keydown', ESCKeyDownListener);
     };
   }, [movieDetailId, updateMovieDetailId]);
+
+  // useEffect 只有在渲染阶段结束后才会执行
+  useEffect(function() {
+    // 组件渲染就会执行一次 useEffect 这是特性 就会把默认已经保存的值重新覆盖为空数组了
+    localStorage.setItem(LOCAL_WATCHED, JSON.stringify(watched));
+  }, [watched]);
 
   return (
       <>
