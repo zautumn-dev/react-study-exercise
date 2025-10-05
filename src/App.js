@@ -118,6 +118,8 @@ export default function App() {
     if (!query.length) {
       setErrMessage(undefined);
       setMovies([]);
+      // 如果打开了详情就关闭
+      movieDetailId && setMovieDetailId(undefined);
       return;
     }
 
@@ -213,7 +215,9 @@ export default function App() {
                                closeDetail={updateMovieDetailId}
                                addWatchMovie={addWatchedMovie}
                                userRating={movieDetailUserRating}
-                               movies={movies}/>
+                               movies={movies}
+                               key={movieDetailId}
+                />
                 :
                 <>
                   <MainWatchSummary watched={watched}

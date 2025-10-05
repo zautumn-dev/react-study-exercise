@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {asyncCatch} from '../lib/utils';
 import Loading from './Loading';
 import StarRating from './StarRating';
@@ -12,6 +12,8 @@ function MovieDetail({
 }) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+
+  const clickCount = useRef(0);
 
   const allowRating = !userRating;
   // const z
@@ -66,14 +68,19 @@ function MovieDetail({
           </header>
           <section>
             <div className="rating">
+              {clickCount.current}
 
               <StarRating
                   option={
                     {size: 24}
                   }
                   defaultRating={userRating}
-                  onSetRating={rating => setMovie(
-                      movie => ({...movie, userRating: rating}))}
+                  onSetRating={rating => {
+                    setMovie(
+                        movie => ({...movie, userRating: rating}));
+
+                    clickCount.current++;
+                  }}
 
               />
               {
