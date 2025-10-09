@@ -1,7 +1,12 @@
-import CreateCustomer from "./CreateCustomer";
-import Customer from "./Customer";
-import AccountOperations from "./AccountOperations";
-import BalanceDisplay from "./BalanceDisplay";
+import CreateCustomer from "./features/customers/CreateCustomer";
+import Customer from "./features/customers/Customer";
+import AccountOperations from "./features/accounts/AccountOperations";
+import BalanceDisplay from "./features/accounts/BalanceDisplay";
+import store from "./shared/store";
+import { deposit } from "./features/accounts/store/accountSlice";
+
+store.dispatch(deposit(300));
+console.log(store.getState());
 
 function App() {
   return (
