@@ -1,10 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useStore } from "react-redux";
+import { createCustomer } from "./store/customerSlice";
+import { useLocalStorageState } from "../../shared/hooks/useLocalStorageState";
+import { useCustomerSelector } from "./store/customerSelector";
+
+const LOCAL_CUSTOM_KEY = "customers";
 
 function Customer() {
-  const [fullName, setFullName] = useState("");
-  const [nationalId, setNationalId] = useState("");
+  const storeCustomer = useCustomerSelector();
 
-  function handleClick() {}
+  const [{ fullName, nationID }, setCustomer] = useLocalStorageState(
+    storeCustomer,
+    LOCAL_CUSTOM_KEY,
+  );
+
+  // const [fullName, setFullName] = useState(customer.fullName);
+  // const [nationalId, setNationalId] = useState(customer.nationID);
+
+  const dispatch = useDispatch();
+
+  function handleClick() {
+    if (!fullName || !nationID) return;
+
+    dispatch(createCustomer(fullName, nationID));
+  }
+
+  useEffect(handleClick, [dispatch, fullName, nationID]);
 
   return (
     <div>
@@ -14,14 +35,24 @@ function Customer() {
           <label>Customer full name</label>
           <input
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={(e) =>
+              setCustomer((customer) => ({
+                ...customer,
+                fullName: e.target.value,
+              }))
+            }
           />
         </div>
         <div>
           <label>National ID</label>
           <input
-            value={nationalId}
-            onChange={(e) => setNationalId(e.target.value)}
+            value={nationID}
+            onChange={(e) =>
+              setCustomer((customer) => ({
+                ...customer,
+                nationID: e.target.value,
+              }))
+            }
           />
         </div>
         <button onClick={handleClick}>Create new customer</button>
