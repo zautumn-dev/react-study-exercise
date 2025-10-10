@@ -5,13 +5,26 @@ const initialStateAccount = {
   isLoading: false,
 };
 
+const toCurrency = "USD";
+
 export default function accountReducer(state = initialStateAccount, action) {
   switch (action.type) {
+    case "accounts/convertingCurrency":
+      return {
+        ...state,
+        isLoading: true,
+      };
     case "accounts/deposit":
-      return { ...state, balance: state.balance + action.payload };
+      return {
+        ...state,
+        balance: state.balance + action.payload,
+        isLoading: false,
+      };
     case "accounts/withdraw":
-      console.log();
-      return { ...state, balance: state.balance - action.payload };
+      return {
+        ...state,
+        balance: state.balance - action.payload,
+      };
     case "accounts/requestLoan":
       if (state.loan > 0) return state;
       return {
@@ -32,10 +45,32 @@ export default function accountReducer(state = initialStateAccount, action) {
   }
 }
 
-export function deposit(amount) {
+export function deposit(amount, currency) {
+  if (currency === toCurrency)
+    return {
+      type: "accounts/deposit",
+      payload: amount,
+    };
+  // https://frankfurter.dev/
+  // 货币汇率转换
+  return async function (dispatch) {
+    dispatch(convertingCurrency());
+
+    const response = await fetch(
+      `https://api.frankfurter.dev/v1/latest?base=${currency}&symbols=${toCurrency}&amount=${amount}`,
+    );
+    const { rates } = await response.json();
+
+    dispatch({
+      type: "accounts/deposit",
+      payload: rates[toCurrency],
+    });
+  };
+}
+
+export function convertingCurrency() {
   return {
-    type: "accounts/deposit",
-    payload: amount,
+    type: "accounts/convertingCurrency",
   };
 }
 

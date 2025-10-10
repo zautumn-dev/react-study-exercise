@@ -1,9 +1,8 @@
 import { useCustomerSelector } from "./store/customerSelector";
 
 function Customer() {
-  const customer = useCustomerSelector();
-  console.log(customer);
-  return <h2>👋 Welcome, %NAME%</h2>;
+  const { fullName } = useCustomerSelector();
+  return <h2>👋 Welcome, {fullName}</h2>;
 }
 
 export default Customer;
