@@ -1,4 +1,6 @@
-const initialStateAccount = {
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialState = {
   balance: 0,
   loan: 0,
   loanPurpose: "",
@@ -7,89 +9,43 @@ const initialStateAccount = {
 
 const toCurrency = "USD";
 
-export default function accountReducer(state = initialStateAccount, action) {
-  switch (action.type) {
-    case "accounts/convertingCurrency":
-      return {
-        ...state,
-        isLoading: true,
-      };
-    case "accounts/deposit":
-      return {
-        ...state,
-        balance: state.balance + action.payload,
-        isLoading: false,
-      };
-    case "accounts/withdraw":
-      return {
-        ...state,
-        balance: state.balance - action.payload,
-      };
-    case "accounts/requestLoan":
-      if (state.loan > 0) return state;
-      return {
-        ...state,
-        loan: action.payload.amount,
-        loanPurpose: action.payload.loanPurpose,
-        balance: state.balance + action.payload.amount,
-      };
-    case "accounts/payLoan":
-      return {
-        ...state,
-        balance: state.balance - state.loan,
-        loan: 0,
-        loanPurpose: "",
-      };
-    default:
-      return state;
-  }
-}
-
-export function deposit(amount, currency) {
-  if (currency === toCurrency)
-    return {
-      type: "accounts/deposit",
-      payload: amount,
-    };
-  // https://frankfurter.dev/
-  // 货币汇率转换
-  return async function (dispatch) {
-    dispatch(convertingCurrency());
-
-    const response = await fetch(
-      `https://api.frankfurter.dev/v1/latest?base=${currency}&symbols=${toCurrency}&amount=${amount}`,
-    );
-    const { rates } = await response.json();
-
-    dispatch({
-      type: "accounts/deposit",
-      payload: rates[toCurrency],
-    });
-  };
-}
-
-export function convertingCurrency() {
-  return {
-    type: "accounts/convertingCurrency",
-  };
-}
-
-export function withdraw(amount) {
-  return { type: "accounts/withdraw", payload: amount };
-}
-
-export function requestLoan(amount, loanPurpose) {
-  return {
-    type: "accounts/requestLoan",
-    payload: {
-      amount,
-      loanPurpose,
+const accountSlice = createSlice({
+  name: "account",
+  initialState,
+  reducers: {
+    deposit(state, action) {
+      state.balance += action.payload;
     },
-  };
-}
+    withdraw(state, action) {
+      if (action.payload > state.balance) return;
+      state.balance -= action.payload;
+    },
+    requestLoan: {
+      // https://redux.js.org/tutorials/essentials/part-4-using-data#preparing-action-payloads
+      // dispatch 传递多个参数
+      // If you need to pass in multiple values, do so as an object, like dispatch(todoAdded({id, text})). Alternately, you can use the "prepare" notation inside of a createSlice reducer to accept multiple separate arguments and create the payload field. The prepare notation is also useful for cases where the action creators were doing additional work, such as generating unique IDs for each item.
+      prepare: (amount, purpose) => ({
+        amount,
+        purpose,
+      }),
+      reducer(state, action) {
+        if (!!state.loan) return;
 
-export function payLoan() {
-  return {
-    type: "accounts/payLoan",
-  };
-}
+        state.loan = action.payload.amount;
+        state.loanPurpose = action.payload.loanPurpose;
+        state.balance += action.payload.amount;
+      },
+    },
+    payLoan(state, action) {
+      if (!state.loan) return;
+
+      state.balance -= state.loan;
+      state.loan = 0;
+      state.loanPurpose = "";
+    },
+  },
+});
+
+export const { deposit, withdraw, requestLoan, payLoan } = accountSlice.actions;
+
+export default accountSlice.reducer;
