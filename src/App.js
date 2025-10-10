@@ -11,9 +11,6 @@ function App() {
 
   const isLogin = !!nationID;
 
-  useEffect(() => {
-    console.log(11);
-  }, [isLogin]);
   return (
     <div>
       <h1>🏦 The React-Redux Bank ⚛️</h1>

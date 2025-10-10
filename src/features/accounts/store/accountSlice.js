@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   balance: 0,
@@ -8,6 +8,25 @@ const initialState = {
 };
 
 const toCurrency = "USD";
+
+export const depositFetch = createAsyncThunk(
+  "account/deposit",
+  async function ({ amount, currency }, { dispatch }) {
+    dispatch({
+      type: "account/convertingCurrency",
+    });
+
+    const response = await fetch(
+      `https://api.frankfurter.dev/v1/latest?base=${currency}&symbols=${toCurrency}&amount=${amount}`,
+    );
+    const { rates } = await response.json();
+
+    // dispatch({
+    //   type: "account/deposit",
+    // });
+    return rates[toCurrency];
+  },
+);
 
 const accountSlice = createSlice({
   name: "account",
@@ -48,35 +67,16 @@ const accountSlice = createSlice({
       state.isLoading = true;
     },
   },
+  extraReducers(builder) {
+    builder.addCase(depositFetch.fulfilled, (state, { payload }) => {
+      state.balance += payload;
+      state.isLoading = false;
+    });
+  },
 });
 
-export const { withdraw, requestLoan, payLoan } = accountSlice.actions;
+export const { withdraw, requestLoan, payLoan, deposit } = accountSlice.actions;
 
 // 通过 dispatch 调用函数返回新的函数 与之前类似 返回 action toolkit 会自动处理
-export function deposit(amount, currency) {
-  if (currency === toCurrency)
-    return {
-      type: "account/deposit",
-      payload: amount,
-    };
-
-  // https://frankfurter.dev/
-  // 货币汇率转换
-  return async function (dispatch) {
-    dispatch({
-      type: "account/convertingCurrency",
-    });
-
-    const response = await fetch(
-      `https://api.frankfurter.dev/v1/latest?base=${currency}&symbols=${toCurrency}&amount=${amount}`,
-    );
-    const { rates } = await response.json();
-
-    dispatch({
-      type: "account/deposit",
-      payload: rates[toCurrency],
-    });
-  };
-}
 
 export default accountSlice.reducer;

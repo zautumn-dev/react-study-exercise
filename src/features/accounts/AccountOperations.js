@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { deposit, payLoan, requestLoan, withdraw } from "./store/accountSlice";
+import {
+  deposit,
+  depositFetch,
+  payLoan,
+  requestLoan,
+  withdraw,
+} from "./store/accountSlice";
 import { useAccountSelector } from "./store/accountSelector";
 
 function AccountOperations() {
@@ -22,7 +28,8 @@ function AccountOperations() {
     if (!depositAmount) return;
 
     // dispatch(deposit(depositAmount));
-    dispatch(deposit(depositAmount, currency));
+    // dispatch(deposit(depositAmount, currency));
+    dispatch(depositFetch({ amount: depositAmount, currency }));
     setDepositAmount("");
     setCurrency("USD");
   }
